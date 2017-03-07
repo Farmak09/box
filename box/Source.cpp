@@ -3,7 +3,7 @@
 
 #pragma comment ( lib, "SDL/libx86/SDL2.lib" )
 #pragma comment ( lib, "SDL/libx86/SDL2main.lib" )
-
+#define BULLETS 17  
 
 int main(int argc, char* args[])
 {
@@ -11,25 +11,42 @@ int main(int argc, char* args[])
 
 	SDL_Window* window;
 	SDL_Renderer* renderer;
-	SDL_CreateWindowAndRenderer(640, 480, SDL_WINDOW_RESIZABLE, &window, &renderer);
+	window = SDL_CreateWindow("Test",SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, 0);
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
 
-	SDL_SetRenderDrawColor(renderer, 255, 50, 50, 255);
-	SDL_RenderClear(renderer);
 	SDL_Rect r;
+	r.h = 100;
+	r.w = 100;
 	r.x = 0;
 	r.y = 0;
-	r.w = 50;
-	r.h = 50;
-	SDL_SetRenderDrawColor(renderer, 50, 50, 255, 255);
-	SDL_RenderFillRect(renderer, &r);
-	SDL_RenderPresent(renderer);
-	
-	SDL_RenderPresent(renderer);
-	int x = 0;
-	int y = 0;
-	int i = 1;
-	while (i == 1) 
+
+
+	SDL_Rect s[BULLETS];
+	for (int i = 0; i < BULLETS; i++)
 	{
+		s[i].h = 50;
+		s[i].w = 50;
+		s[i].x = 0;
+		s[i].y = -50;
+	}
+
+	SDL_Surface* Chara = SDL_LoadBMP("Images/Marion.bmp");
+	SDL_Surface* Star = SDL_LoadBMP("Images/Star.bmp");
+
+	SDL_Texture* Marion = SDL_CreateTextureFromSurface(renderer, Chara);
+	SDL_Texture* Shoot = SDL_CreateTextureFromSurface(renderer, Star);
+
+	bool shooting_stars = false;
+	bool up_key = false;
+	bool down_key = false;
+	bool left_key = false;
+	bool right_key = false;
+
+	int bullet_counter = 0;
+	int exit = 1;
+	while (exit == 1)
+	{
+
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
@@ -38,43 +55,69 @@ int main(int argc, char* args[])
 				switch (event.key.keysym.scancode)
 				{
 				case SDL_SCANCODE_UP:
-				{
-					y -= 5;
+					up_key = true;
 					break;
-				}
 				case SDL_SCANCODE_DOWN:
-				{
-					y += 5;
+					down_key = true;
 					break;
-				}
 				case SDL_SCANCODE_LEFT:
-				{
-					x -= 5;
+					left_key = true;
 					break;
-				}
 				case SDL_SCANCODE_RIGHT:
-				{
-					x += 5;
+					right_key = true;
 					break;
-				}
+				case SDL_SCANCODE_SPACE:
+					if(event.key.repeat == 0) shooting_stars = true;
+					break;
 				case SDL_SCANCODE_ESCAPE:
-				{
-					i = 0;
+					exit = 0;
 					break;
 				}
-				default:
-				{
-					i = 1;
-				}
-				}		
 			}
+			if (up_key) r.y -= 5;
+			if (down_key) r.y += 5;
+			if (left_key) r.x -= 5;
+			if (right_key) r.x += 5;
+			if (shooting_stars == true)
+			{
+				s[bullet_counter].y = r.y + 20;
+				s[bullet_counter].x = r.x + 100;
+				shooting_stars = false;
+				bullet_counter++;
+				if (bullet_counter == BULLETS) bullet_counter = 0;
+			}
+
+			if (event.type == SDL_KEYUP)
+			{
+				switch (event.key.keysym.scancode)
+				{
+				case SDL_SCANCODE_UP:
+					up_key = false;
+					break;
+				case SDL_SCANCODE_DOWN:
+					down_key = false;
+					break;
+				case SDL_SCANCODE_LEFT:
+					left_key = false;
+					break;
+				case SDL_SCANCODE_RIGHT:
+					right_key = false;
+					break;
+				}
+			}			
 		}
-		SDL_SetRenderDrawColor(renderer, 255, 50, 50, 255);
+		for (int i = 0; i < BULLETS; i++)
+		{
+			s[i].x += 10;
+		}
+
+		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 		SDL_RenderClear(renderer);
-		r.x = x;
-		r.y = y;
-		SDL_SetRenderDrawColor(renderer, 50, 50, 255, 255);
-		SDL_RenderFillRect(renderer, &r);
+		SDL_RenderCopy(renderer, Marion, NULL, &r);
+		for (int i = 0; i < BULLETS; i++)
+		{
+			SDL_RenderCopy(renderer, Shoot, NULL, &s[i]);
+		}
 		SDL_RenderPresent(renderer);
 	}
 	SDL_Quit();
