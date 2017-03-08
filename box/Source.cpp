@@ -6,6 +6,16 @@
 
 #define BULLETS 17  
 
+void EnemyGeneration()
+{
+	bool Enemy_Appears = false;
+	int Apperance = rand() % 100;
+	if (Apperance == 99)
+	{
+		Enemy_Appears = true;
+	}
+}
+
 int main(int argc, char* args[])
 {
 	SDL_Init(SDL_INIT_EVERYTHING);
@@ -15,34 +25,40 @@ int main(int argc, char* args[])
 	window = SDL_CreateWindow("Test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, 0);
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
 
-	SDL_Rect r;
-	r.h = 100;
-	r.w = 100;
-	r.x = 0;
-	r.y = 0;
+	SDL_Rect Chara;
+	Chara.h = 100;
+	Chara.w = 100;
+	Chara.x = 0;
+	Chara.y = 0;
 
-	SDL_Rect s[BULLETS];
+	SDL_Rect Bullet[BULLETS];
 	for (int i = 0; i < BULLETS; i++)
 	{
-		s[i].h = 50;
-		s[i].w = 50;
-		s[i].x = 0;
-		s[i].y = -50;
+		Bullet[i].h = 50;
+		Bullet[i].w = 50;
+		Bullet[i].x = 0;
+		Bullet[i].y = -50;
 	}
 
-	SDL_Rect t[2];
-	t[0].h = 480;
-	t[1].h = 480;
-	t[0].w = 1240;
-	t[1].w = 1240;
-	t[0].x = 0;
-	t[1].x = 1240;
-	t[0].y = 0;
-	t[1].y = 0;
+	SDL_Rect Back[2];
+	Back[0].h = 480;
+	Back[1].h = 480;
+	Back[0].w = 1186;
+	Back[1].w = 1186;
+	Back[0].x = 0;
+	Back[1].x = 1186;
+	Back[0].y = 0;
+	Back[1].y = 0;
+
+	SDL_Rect Enemy;
+	Enemy.h = 100;
+	Enemy.w = 100;
+	Enemy.y = rand() % 
+
 
 	SDL_Surface* Chara = SDL_LoadBMP("Images/Marion.bmp");
 	SDL_Surface* Star = SDL_LoadBMP("Images/Star.bmp");
-	SDL_Surface* SBackground = SDL_LoadBMP("Images/parallax.bmp");
+	SDL_Surface* SBackground = SDL_LoadBMP("Images/Parallax.bmp");
 
 	SDL_Texture* Marion = SDL_CreateTextureFromSurface(renderer, Chara);
 	SDL_Texture* Shoot = SDL_CreateTextureFromSurface(renderer, Star);
@@ -67,16 +83,16 @@ int main(int argc, char* args[])
 				switch (event.key.keysym.scancode)
 				{
 				case SDL_SCANCODE_UP:
-					up_key = true;
+					if (event.key.repeat == 0) up_key = true;
 					break;
 				case SDL_SCANCODE_DOWN:
-					down_key = true;
+					if (event.key.repeat == 0) down_key = true;
 					break;
 				case SDL_SCANCODE_LEFT:
-					left_key = true;
+					if (event.key.repeat == 0) left_key = true;
 					break;
 				case SDL_SCANCODE_RIGHT:
-					right_key = true;
+					if (event.key.repeat == 0) right_key = true;
 					break;
 				case SDL_SCANCODE_SPACE:
 					if (event.key.repeat == 0) shooting_stars = true;
@@ -86,19 +102,7 @@ int main(int argc, char* args[])
 					break;
 				}
 			}
-			if (up_key) r.y -= 5;
-			if (down_key) r.y += 5;
-			if (left_key) r.x -= 5;
-			if (right_key) r.x += 5;
-			if (shooting_stars == true)
-			{
-				s[bullet_counter].y = r.y + 20;
-				s[bullet_counter].x = r.x + 100;
-				shooting_stars = false;
-				bullet_counter++;
-				if (bullet_counter == BULLETS) bullet_counter = 0;
-			}
-
+			
 			if (event.type == SDL_KEYUP)
 			{
 				switch (event.key.keysym.scancode)
@@ -117,32 +121,47 @@ int main(int argc, char* args[])
 					break;
 				}
 			}
+
+			if (up_key) Chara.y -= 10; if (Chara.y < 0) Chara.y = 0;
+			if (down_key) Chara.y += 10; if (Chara.y > 380) Chara.y = 380;
+			if (left_key) Chara.x -= 10; if (Chara.x < 0) Chara.x = 0;
+			if (right_key) Chara.x += 10; if (Chara.x > 540) Chara.x = 540;
+			if (shooting_stars == true)
+			{
+				Bullet[bullet_counter].y = Chara.y + 20;
+				Bullet[bullet_counter].x = Chara.x + 100;
+				shooting_stars = false;
+				bullet_counter++;
+				if (bullet_counter == BULLETS) bullet_counter = 0;
+			}
 		}
 		for (int i = 0; i < BULLETS; i++)
 		{
-			s[i].x += 10;
+			Bullet[i].x += 10;
 		}
 
-		t[0].x -= 31;
-		if (t[0].x == -1240)
+		EnemyGeneration();
+
+		Back[0].x -= 2;
+		if (Back[0].x <= -1186)
 		{
-			t[0].x = 1240;
+			Back[0].x = 1186;
 		}
-		t[1].x -= 31;
-		if (t[1].x == -1240)
+		Back[1].x -= 2;
+		if (Back[1].x <= -1186)
 		{
-			t[1].x = 1240;
+			Back[1].x = 1186;
 		}
 		SDL_RenderClear(renderer);
-		SDL_RenderCopy(renderer, Background, NULL, &t[0]);
-		SDL_RenderCopy(renderer, Background, NULL, &t[1]);
-		SDL_RenderCopy(renderer, Marion, NULL, &r);
+		SDL_RenderCopy(renderer, Background, NULL, &Back[0]);
+		SDL_RenderCopy(renderer, Background, NULL, &Back[1]);
+		SDL_RenderCopy(renderer, Marion, NULL, &Chara);
 		for (int i = 0; i < BULLETS; i++)
 		{
-			SDL_RenderCopy(renderer, Shoot, NULL, &s[i]);
+			SDL_RenderCopy(renderer, Shoot, NULL, &Bullet[i]);
 		}
 
-		SDL_RenderPresent(renderer);
+ 		SDL_RenderPresent(renderer);
 	}
 	SDL_Quit();
 	return(EXIT_SUCCESS);
